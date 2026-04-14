@@ -8,9 +8,6 @@ function getView() {
   return new URLSearchParams(window.location.search).get("view") ?? "init";
 }
 
-// ===========================================================================
-// VIEW: Init frame — registers Power-Up capabilities (invisible to user)
-// ===========================================================================
 function InitFrame() {
   useEffect(() => {
     window.TrelloPowerUp.initialize({
@@ -31,9 +28,6 @@ function InitFrame() {
   return null;
 }
 
-// ===========================================================================
-// VIEW: Board-button popup (?view=popup)
-// ===========================================================================
 function PopupFrame() {
   const [authState, setAuthState] = useState("idle"); // "idle"|"connecting"|"authenticated"|"error"
 
@@ -142,9 +136,6 @@ function PopupFrame() {
   );
 }
 
-// ===========================================================================
-// Root router
-// ===========================================================================
 export default function App() {
   const view = getView();
   if (view === "popup") return <PopupFrame />;
