@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Authenticating...</title>
+  </head>
+  <body>
+    <script>
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const token = params.get("token");
+
+      if (token && window.opener) {
+        window.opener.postMessage({ type: "trello-token", token }, "*");
+      }
+      window.close();
+    </script>
+  </body>
+</html>
