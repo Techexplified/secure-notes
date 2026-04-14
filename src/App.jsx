@@ -82,10 +82,10 @@ function PopupFrame() {
 
   return (
     <div className="popup">
-      <div className="popup__header">
+      {/* <div className="popup__header">
         <span className="popup__lock">🔒</span>
         <h2 className="popup__title">{APP_NAME}</h2>
-      </div>
+      </div> */}
 
       <div className="popup__body">
         {authState === "idle" && (
