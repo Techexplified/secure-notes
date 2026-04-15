@@ -13,7 +13,6 @@ function InitFrame() {
     if (!window.TrelloPowerUp) return;
 
     window.TrelloPowerUp.initialize({
-      // Board button for authentication
       "board-buttons": () => [
         {
           text: APP_NAME,
@@ -26,11 +25,9 @@ function InitFrame() {
         },
       ],
 
-      // ✅ Add Private Notes section to each card
       "card-back-section": async (t) => {
         const token = await t.loadSecret("trello_token").catch(() => null);
 
-        // Only show the section if the user is authenticated
         if (!token) {
           return [];
         }
@@ -54,11 +51,10 @@ function InitFrame() {
 }
 
 function PopupFrame() {
-  const [authState, setAuthState] = useState("idle"); // "idle"|"connecting"|"authenticated"|"error"
+  const [authState, setAuthState] = useState("idle");
 
   const t = window.TrelloPowerUp.iframe();
 
-  // Check for an existing stored token on mount
   useEffect(() => {
     t.loadSecret("trello_token")
       .then((token) => {
@@ -67,7 +63,6 @@ function PopupFrame() {
       .catch(() => {});
   }, []);
 
-  // Open Trello OAuth popup; auth.html posts the token back via postMessage
   function handleConnect() {
     setAuthState("connecting");
 
@@ -107,11 +102,6 @@ function PopupFrame() {
 
   return (
     <div className="popup">
-      {/* <div className="popup__header">
-        <span className="popup__lock">🔒</span>
-        <h2 className="popup__title">{APP_NAME}</h2>
-      </div> */}
-
       <div className="popup__body">
         {authState === "idle" && (
           <>

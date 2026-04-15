@@ -48,26 +48,6 @@ body,
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
 }
 
-.popup__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  background: #0d1117;
-}
-
-.popup__lock {
-  font-size: 18px;
-}
-
-.popup__title {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-  color: var(--text);
-}
-
 .popup__body {
   display: flex;
   flex-direction: column;
