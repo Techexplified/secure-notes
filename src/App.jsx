@@ -10,8 +10,11 @@ function getView() {
 
 function InitFrame() {
   useEffect(() => {
+    if (!window.TrelloPowerUp) return;
+
     window.TrelloPowerUp.initialize({
-      "board-buttons": (t) => [
+      // Board button for authentication
+      "board-buttons": () => [
         {
           text: APP_NAME,
           callback: (t) =>
@@ -22,6 +25,28 @@ function InitFrame() {
             }),
         },
       ],
+
+      // ✅ Add Private Notes section to each card
+      "card-back-section": async (t) => {
+        const token = await t.loadSecret("trello_token").catch(() => null);
+
+        // Only show the section if the user is authenticated
+        if (!token) {
+          return [];
+        }
+
+        return [
+          {
+            title: "Private Notes",
+            icon: "https://img.icons8.com/ios-filled/50/lock.png", // Optional icon
+            content: {
+              type: "iframe",
+              url: t.signUrl("./index.html?view=card-notes"),
+              height: 250,
+            },
+          },
+        ];
+      },
     });
   }, []);
 
@@ -136,8 +161,79 @@ function PopupFrame() {
   );
 }
 
+function CardNotesFrame() {
+  const [note, setNote] = useState("");
+  const [saved, setSaved] = useState(false);
+  const t = window.TrelloPowerUp.iframe();
+
+  // Load the existing private note
+  useEffect(() => {
+    async function loadNote() {
+      const existingNote = await t.get("card", "private", "secureNote");
+      if (existingNote) setNote(existingNote);
+      t.sizeTo(document.body); // Adjust iframe height
+    }
+    loadNote();
+  }, []);
+
+  // Save the note
+  const handleSave = async () => {
+    await t.set("card", "private", "secureNote", note);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  // Copy note to clipboard
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(note);
+  };
+
+  // Optional: Share note to card comments
+  const handleShare = async () => {
+    if (!note.trim()) return;
+    await t.card("id").then(async (card) => {
+      const token = await t.loadSecret("trello_token");
+      await fetch(
+        `https://api.trello.com/1/cards/${card.id}/actions/comments?text=${encodeURIComponent(
+          note,
+        )}&key=${import.meta.env.VITE_TRELLO_API_KEY}&token=${token}`,
+        { method: "POST" },
+      );
+    });
+  };
+
+  return (
+    <div className="card-notes">
+      <div className="card-notes__header">
+        <span className="lock">🔒</span>
+        <h3>Private Notes</h3>
+        <div className="actions">
+          <button onClick={handleCopy}>Copy</button>
+          <button onClick={handleShare}>Share</button>
+        </div>
+      </div>
+
+      <textarea
+        className="card-notes__textarea"
+        placeholder="Write your private note here..."
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+      />
+
+      <div className="card-notes__footer">
+        <button className="btn-save" onClick={handleSave}>
+          Save
+        </button>
+        <span className="hint">Only you can see this private note</span>
+        {saved && <span className="saved">Saved!</span>}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const view = getView();
   if (view === "popup") return <PopupFrame />;
+  if (view === "card-notes") return <CardNotesFrame />;
   return <InitFrame />;
 }
