@@ -37,7 +37,7 @@ function InitFrame() {
 
         return [
           {
-            title: "Private Notes",
+            title: "Secure Notes",
             icon: "https://img.icons8.com/ios-filled/50/lock.png", // Optional icon
             content: {
               type: "iframe",
@@ -205,11 +205,14 @@ function CardNotesFrame() {
   return (
     <div className="card-notes">
       <div className="card-notes__header">
-        <span className="lock">🔒</span>
-        <h3>Private Notes</h3>
+        <h3>Secure Notes</h3>
         <div className="actions">
-          <button onClick={handleCopy}>Copy</button>
-          <button onClick={handleShare}>Share</button>
+          <button onClick={handleCopy} className="btn-save">
+            Copy
+          </button>
+          <button onClick={handleShare} className="btn-save">
+            Share
+          </button>
         </div>
       </div>
 
