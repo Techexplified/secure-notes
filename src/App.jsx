@@ -206,9 +206,9 @@ function CardNotesFrame() {
   return (
     <div className="card-notes">
       {/* Header */}
-      <div className="card-notes__header">
+      {/* <div className="card-notes__header">
         <h3>🔒 Secure Notes</h3>
-      </div>
+      </div> */}
 
       {/* ----------- VIEW MODE ----------- */}
       {!isEditing && (
