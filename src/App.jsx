@@ -155,6 +155,7 @@ function CardNotesFrame() {
   const [note, setNote] = useState("");
   const [saved, setSaved] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
   const t = window.TrelloPowerUp.iframe();
 
   // Load the existing private note
@@ -184,8 +185,31 @@ function CardNotesFrame() {
 
   // Copy note to clipboard
   const handleCopy = async () => {
-    if (!note) return;
-    await navigator.clipboard.writeText(note);
+    if (!note || !note.trim()) return;
+
+    try {
+      // Modern Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(note);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = note;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      // Show feedback to the user
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
   };
 
   // Share note to card comments
@@ -248,7 +272,7 @@ function CardNotesFrame() {
               Save
             </button>
             <button className="btn-secondary" onClick={handleCopy}>
-              Copy
+              {copied ? "Copied!" : "Copy"}
             </button>
             <button className="btn-secondary" onClick={handleShare}>
               Share
