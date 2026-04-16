@@ -184,34 +184,40 @@ function CardNotesFrame() {
   };
 
   // Copy note to clipboard
-  const handleCopy = async () => {
+  const handleCopy = () => {
     if (!note || !note.trim()) return;
 
     try {
-      // Modern Clipboard API
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(note);
-      } else {
-        // Fallback for older browsers
-        const textArea = document.createElement("textarea");
-        textArea.value = note;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-      }
+      // Create a temporary textarea element
+      const textArea = document.createElement("textarea");
+      textArea.value = note;
 
-      // Show feedback to the user
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Prevent the textarea from affecting layout
+      textArea.style.position = "fixed";
+      textArea.style.top = "-1000px";
+      textArea.style.left = "-1000px";
+      textArea.style.opacity = "0";
+
+      document.body.appendChild(textArea);
+
+      // Select and copy the text
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand("copy");
+
+      // Clean up
+      document.body.removeChild(textArea);
+
+      if (successful) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        console.error("Copy command was unsuccessful.");
+      }
     } catch (err) {
       console.error("Failed to copy text:", err);
     }
   };
-
   // Share note to card comments
   const handleShare = async () => {
     if (!note.trim()) return;
