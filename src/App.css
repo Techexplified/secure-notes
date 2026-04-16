@@ -49,8 +49,9 @@ body,
 /* ── Popup container ─────────────────────────────────────── */
 .popup {
   display: flex;
+  height: 100%;
   flex-direction: column;
-  min-height: 180px;
+  /* min-height: 180px; */
   padding: 0;
   background: var(--surface);
   border-radius: var(--radius);
