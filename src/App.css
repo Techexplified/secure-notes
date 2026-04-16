@@ -1,13 +1,16 @@
 :root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text-muted: #8b949e;
-  --accent: #0c66e4; /* teal */
-  --accent-dark: #579dff;
-  --ok: #3fb950;
-  --err: #f85149;
+  /* Atlassian Design Tokens for automatic theme adaptation */
+  --bg: var(--ds-surface-overlay, #ffffff);
+  --surface: var(--ds-surface, #ffffff);
+  --border: var(--ds-border, #dfe1e6);
+  --text: var(--ds-text, #172b4d);
+  --text-muted: var(--ds-text-subtle, #6b778c);
+  --accent: var(--ds-background-brand-bold, #0c66e4);
+  --accent-hover: var(--ds-background-brand-bold-hovered, #0055cc);
+  --ok: var(--ds-text-success, #1f845a);
+  --ok-bg: var(--ds-background-success, #e3fcef);
+  --err: var(--ds-text-danger, #ae2e24);
+  --err-bg: var(--ds-background-danger, #ffebe6);
   --radius: 10px;
   --font: "DM Sans", system-ui, sans-serif;
 }
@@ -26,9 +29,16 @@
 html,
 body,
 #root {
-  height: 100%;
   background: var(--bg);
   color: var(--text);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  /* background: var(--bg);
+  color: var(--text); */
   font-family: var(--font);
   font-size: 14px;
   overflow: hidden;
@@ -45,7 +55,7 @@ body,
   background: var(--surface);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--ds-shadow-overlay, 0 8px 24px rgba(0, 0, 0, 0.15));
 }
 
 .popup__body {
@@ -93,20 +103,19 @@ body,
 
 .btn--primary {
   background: var(--accent);
-  color: #0d1117;
+  color: var(--ds-text-inverse, #ffffff);
 }
 .btn--primary:hover {
-  filter: brightness(1.1);
+  background: var(--accent-hover);
 }
 
 .btn--ghost {
   background: transparent;
-  color: var(--text-muted);
+  color: var(--text);
   border: 1px solid var(--border);
 }
 .btn--ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  background: var(--ds-background-neutral-hovered, rgba(9, 30, 66, 0.08));
 }
 
 /* ── Authenticated pill ──────────────────────────────────── */
@@ -121,9 +130,9 @@ body,
 }
 
 .pill--ok {
-  background: rgba(63, 185, 80, 0.15);
+  background: var(--ok-bg);
   color: var(--ok);
-  border: 1px solid rgba(63, 185, 80, 0.35);
+  border: 1px solid var(--ok);
 }
 
 /* ── Connecting state ────────────────────────────────────── */
@@ -237,8 +246,8 @@ body,
 }
 
 .btn-save {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--ds-background-success-bold, #1f845a);
+  color: var(--ds-text-inverse, #ffffff);
   border: none;
   padding: 6px 12px;
   border-radius: 3px;
@@ -246,8 +255,8 @@ body,
 }
 
 .btn-secondary {
-  background-color: #579dff;
-  color: #1d2125;
+  background-color: var(--accent);
+  color: var(--ds-text-inverse, #ffffff);
   border: none;
   padding: 6px 12px;
   border-radius: 3px;
@@ -255,10 +264,17 @@ body,
 }
 
 .btn-cancel {
-  background: transparent;
-  border: none;
-  color: var(--ds-text, #172b4d);
+  background: var(--ds-background-neutral, rgba(9, 30, 66, 0.04));
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 3px;
   cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-cancel:hover {
+  background: var(--ds-background-neutral-hovered, rgba(9, 30, 66, 0.08));
 }
 
 .hint {
