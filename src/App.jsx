@@ -15,6 +15,10 @@ function InitFrame() {
     window.TrelloPowerUp.initialize({
       "board-buttons": () => [
         {
+          icon: {
+            dark: "https://secure-notes-flame.vercel.app/icon.svg",
+            light: "https://secure-notes-flame.vercel.app/icon.svg",
+          },
           text: APP_NAME,
           callback: (t) =>
             t.popup({
