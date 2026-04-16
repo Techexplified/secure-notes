@@ -165,14 +165,14 @@ function CardNotesFrame() {
       if (existingNote) {
         setNote(existingNote);
       }
-      t.sizeTo(document.body);
+      t.sizeTo(document.body).catch(() => {});
     }
     loadNote();
   }, []);
 
   // Adjust iframe height when mode changes
   useEffect(() => {
-    t.sizeTo(document.body);
+    t.sizeTo(document.body).catch(() => {});
   }, [isEditing, note]);
 
   // Save the note
