@@ -42,7 +42,7 @@ function InitFrame() {
 
         if (!installTracked) {
           try {
-            await fetch(`${ANALYTICS_API}/track`, {
+            await fetch(`${ANALYTICS_API}track`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ externalAppId, event: "install" }),
@@ -63,7 +63,7 @@ function InitFrame() {
           lastHeartbeat < Date.now() - 24 * 60 * 60 * 1000
         ) {
           try {
-            await fetch(`${ANALYTICS_API}/api/trello/track`, {
+            await fetch(`${ANALYTICS_API}track`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ externalAppId, event: "heartbeat" }),
