@@ -3,6 +3,7 @@ import "./App.css";
 
 const API_KEY = import.meta.env.VITE_TRELLO_API_KEY;
 const APP_NAME = import.meta.env.VITE_POWER_UP_NAME ?? "Secure Notes";
+const ANALYTICS_API = "http://localhost:5000/api/marketplace/app/";
 
 function getView() {
   return new URLSearchParams(window.location.search).get("view") ?? "init";
@@ -13,21 +14,82 @@ function InitFrame() {
     if (!window.TrelloPowerUp) return;
 
     window.TrelloPowerUp.initialize({
-      "board-buttons": () => [
-        {
-          icon: {
-            dark: "https://secure-notes-flame.vercel.app/icon.svg",
-            light: "https://secure-notes-flame.vercel.app/icon.svg",
+      // "board-buttons": () => [
+      //   {
+      //     icon: {
+      //       dark: "https://secure-notes-flame.vercel.app/icon.svg",
+      //       light: "https://secure-notes-flame.vercel.app/icon.svg",
+      //     },
+      //     text: APP_NAME,
+      //     callback: (t) =>
+      //       t.popup({
+      //         title: APP_NAME,
+      //         url: "./index.html?view=popup",
+      //         height: 220,
+      //       }),
+      //   },
+      // ],
+
+      "board-buttons": async (t) => {
+        const ctx = t.getContext();
+        // ctx.board IS the externalAppId — no separate boardId needed
+        const externalAppId = ctx.board;
+
+        // ── Install (once per board doc) ──
+        const installTracked = await t
+          .get("board", "shared", "snInstallTracked")
+          .catch(() => null);
+
+        if (!installTracked) {
+          try {
+            await fetch(`${ANALYTICS_API}/track`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ externalAppId, event: "install" }),
+            });
+            await t.set("board", "shared", "snInstallTracked", true);
+          } catch (e) {
+            console.warn("⚠️ Install track failed", e);
+          }
+        }
+
+        // ── Heartbeat (once per day) ──
+        const lastHeartbeat = await t
+          .get("board", "shared", "snLastHeartbeat")
+          .catch(() => null);
+
+        if (
+          !lastHeartbeat ||
+          lastHeartbeat < Date.now() - 24 * 60 * 60 * 1000
+        ) {
+          try {
+            await fetch(`${ANALYTICS_API}/api/trello/track`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ externalAppId, event: "heartbeat" }),
+            });
+            await t.set("board", "shared", "snLastHeartbeat", Date.now());
+          } catch (e) {
+            console.warn("⚠️ Heartbeat failed", e);
+          }
+        }
+
+        return [
+          {
+            icon: {
+              dark: "https://secure-notes-flame.vercel.app/icon.svg",
+              light: "https://secure-notes-flame.vercel.app/icon.svg",
+            },
+            text: APP_NAME,
+            callback: (t) =>
+              t.popup({
+                title: APP_NAME,
+                url: "./index.html?view=popup",
+                height: 220,
+              }),
           },
-          text: APP_NAME,
-          callback: (t) =>
-            t.popup({
-              title: APP_NAME,
-              url: "./index.html?view=popup",
-              height: 220,
-            }),
-        },
-      ],
+        ];
+      },
 
       "card-back-section": async (t) => {
         const token = await t.loadSecret("trello_token").catch(() => null);
