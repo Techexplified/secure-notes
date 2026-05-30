@@ -21,7 +21,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://p.trellocdn.com https://apis.google.com https://accounts.google.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-ancestors https://trello.com; connect-src 'self' https://api.trello.com https://*.vercel.app https://p.trellocdn.com; img-src 'self' data: https:;"
+          "value": "default-src 'self'; script-src 'self' https://p.trellocdn.com https://apis.google.com https://accounts.google.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-ancestors https://trello.com; connect-src 'self' https://api.trello.com https://*.vercel.app https://p.trellocdn.com https://cmsapi-pf6diz22ka-uc.a.run.app; img-src 'self' data: https:;"
         }
       ]
     }
