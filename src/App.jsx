@@ -41,6 +41,8 @@ function InitFrame() {
           .get("board", "shared", "snInstallTracked")
           .catch(() => null);
 
+        console.log({ externalAppId });
+
         if (!installTracked) {
           try {
             await fetch(`${ANALYTICS_API}track`, {
