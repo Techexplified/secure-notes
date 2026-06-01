@@ -5,6 +5,7 @@ const API_KEY = import.meta.env.VITE_TRELLO_API_KEY;
 const APP_NAME = import.meta.env.VITE_POWER_UP_NAME ?? "Secure Notes";
 const ANALYTICS_API =
   "https://cmsapi-pf6diz22ka-uc.a.run.app/api/marketplace/app/";
+const POWER_UP_ID = "69de3fb048393f36756a1ffb";
 
 function getView() {
   return new URLSearchParams(window.location.search).get("view") ?? "init";
@@ -41,14 +42,15 @@ function InitFrame() {
           .get("board", "shared", "snInstallTracked")
           .catch(() => null);
 
-        console.log({ externalAppId });
-
         if (!installTracked) {
           try {
             await fetch(`${ANALYTICS_API}track`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ externalAppId, event: "install" }),
+              body: JSON.stringify({
+                externalAppId: POWER_UP_ID,
+                event: "install",
+              }),
             });
             await t.set("board", "shared", "snInstallTracked", true);
           } catch (e) {
@@ -69,7 +71,10 @@ function InitFrame() {
             await fetch(`${ANALYTICS_API}track`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ externalAppId, event: "heartbeat" }),
+              body: JSON.stringify({
+                externalAppId: POWER_UP_ID,
+                event: "heartbeat",
+              }),
             });
             await t.set("board", "shared", "snLastHeartbeat", Date.now());
           } catch (e) {
