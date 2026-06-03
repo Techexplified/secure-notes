@@ -31,7 +31,7 @@ function InitFrame() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 externalAppId: POWER_UP_ID, // finds the app doc in DB
-                boardId, // ✅ identifies which board
+                boardId, //  identifies which board
                 event: "install",
               }),
             });
