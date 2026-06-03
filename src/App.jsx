@@ -17,31 +17,35 @@ function InitFrame() {
     window.TrelloPowerUp.initialize({
       "board-buttons": async (t) => {
         const ctx = t.getContext();
-        const boardId = ctx.board; // ← actual Trello board ID
+        const boardId = ctx.board;
 
-        // ── Install (once per board) ──
+        // ── Install ──
         const installTracked = await t
           .get("board", "shared", "snInstallTracked")
           .catch(() => null);
 
         if (!installTracked) {
+          // ✅ Set the flag FIRST before fetching — prevents race condition
+          await t.set("board", "shared", "snInstallTracked", true);
+
           try {
-            await fetch(`${ANALYTICS_API}track`, {
+            await fetch(`${ANALYTICS_API}/track`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                externalAppId: POWER_UP_ID, // finds the app doc in DB
-                boardId, //  identifies which board
+                externalAppId: POWER_UP_ID,
+                boardId,
                 event: "install",
               }),
             });
-            await t.set("board", "shared", "snInstallTracked", true);
           } catch (e) {
+            // If fetch fails, roll back the flag so it retries next time
+            await t.set("board", "shared", "snInstallTracked", false);
             console.warn("⚠️ Install track failed", e);
           }
         }
 
-        // ── Heartbeat (once per day) ──
+        // ── Heartbeat ──
         const lastHeartbeat = await t
           .get("board", "shared", "snLastHeartbeat")
           .catch(() => null);
@@ -50,18 +54,22 @@ function InitFrame() {
           !lastHeartbeat ||
           lastHeartbeat < Date.now() - 24 * 60 * 60 * 1000
         ) {
+          // ✅ Set timestamp FIRST before fetching
+          await t.set("board", "shared", "snLastHeartbeat", Date.now());
+
           try {
-            await fetch(`${ANALYTICS_API}track`, {
+            await fetch(`${ANALYTICS_API}/track`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 externalAppId: POWER_UP_ID,
-                boardId, // ✅ identifies which board
+                boardId,
                 event: "heartbeat",
               }),
             });
-            await t.set("board", "shared", "snLastHeartbeat", Date.now());
           } catch (e) {
+            // Roll back so it retries tomorrow
+            await t.set("board", "shared", "snLastHeartbeat", null);
             console.warn("⚠️ Heartbeat failed", e);
           }
         }
@@ -156,9 +164,9 @@ function PopupFrame() {
   async function handleDisconnect() {
     await t.storeSecret("trello_token", "").catch(() => {});
 
-    //Track uninstall
+    // ✅ board context IS available in popup iframe via t.getContext()
     try {
-      const ctx = t.getContext();
+      const ctx = await t.getContext(); // ← await it
       await fetch(`${ANALYTICS_API}/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -168,10 +176,9 @@ function PopupFrame() {
           event: "uninstall",
         }),
       });
-      // Clear the install flag so if they reinstall it tracks again
       await t.set("board", "shared", "snInstallTracked", false);
     } catch (e) {
-      console.warn("Uninstall track failed", e);
+      console.warn("⚠️ Uninstall track failed", e);
     }
 
     setAuthState("idle");
