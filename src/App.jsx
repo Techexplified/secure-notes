@@ -3,9 +3,8 @@ import "./App.css";
 
 const API_KEY = import.meta.env.VITE_TRELLO_API_KEY;
 const APP_NAME = import.meta.env.VITE_POWER_UP_NAME ?? "Secure Notes";
-const ANALYTICS_API =
-  "https://cmsapi-pf6diz22ka-uc.a.run.app/api/marketplace/app/";
-const POWER_UP_ID = "69de3fb048393f36756a1ffb";
+const ANALYTICS_API = import.meta.env.VITE_ANALYTICS_API;
+const POWER_UP_ID = import.meta.env.VITE_POWER_UP_ID;
 
 function getView() {
   return new URLSearchParams(window.location.search).get("view") ?? "init";
