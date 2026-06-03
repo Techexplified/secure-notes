@@ -15,28 +15,11 @@ function InitFrame() {
     if (!window.TrelloPowerUp) return;
 
     window.TrelloPowerUp.initialize({
-      // "board-buttons": () => [
-      //   {
-      //     icon: {
-      //       dark: "https://secure-notes-flame.vercel.app/icon.svg",
-      //       light: "https://secure-notes-flame.vercel.app/icon.svg",
-      //     },
-      //     text: APP_NAME,
-      //     callback: (t) =>
-      //       t.popup({
-      //         title: APP_NAME,
-      //         url: "./index.html?view=popup",
-      //         height: 220,
-      //       }),
-      //   },
-      // ],
-
       "board-buttons": async (t) => {
         const ctx = t.getContext();
-        // ctx.board IS the externalAppId — no separate boardId needed
-        const externalAppId = ctx.board;
+        const boardId = ctx.board; // ← actual Trello board ID
 
-        // ── Install (once per board doc) ──
+        // ── Install (once per board) ──
         const installTracked = await t
           .get("board", "shared", "snInstallTracked")
           .catch(() => null);
@@ -47,7 +30,8 @@ function InitFrame() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                externalAppId: POWER_UP_ID,
+                externalAppId: POWER_UP_ID, // finds the app doc in DB
+                boardId, // ✅ identifies which board
                 event: "install",
               }),
             });
@@ -72,6 +56,7 @@ function InitFrame() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 externalAppId: POWER_UP_ID,
+                boardId, // ✅ identifies which board
                 event: "heartbeat",
               }),
             });
@@ -170,6 +155,25 @@ function PopupFrame() {
 
   async function handleDisconnect() {
     await t.storeSecret("trello_token", "").catch(() => {});
+
+    //Track uninstall
+    try {
+      const ctx = t.getContext();
+      await fetch(`${ANALYTICS_API}/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          externalAppId: POWER_UP_ID,
+          boardId: ctx.board,
+          event: "uninstall",
+        }),
+      });
+      // Clear the install flag so if they reinstall it tracks again
+      await t.set("board", "shared", "snInstallTracked", false);
+    } catch (e) {
+      console.warn("Uninstall track failed", e);
+    }
+
     setAuthState("idle");
   }
 
