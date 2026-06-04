@@ -164,7 +164,7 @@ function PopupFrame() {
   async function handleDisconnect() {
     await t.storeSecret("trello_token", "").catch(() => {});
 
-    // ✅ board context IS available in popup iframe via t.getContext()
+    // board context IS available in popup iframe via t.getContext()
     try {
       const ctx = await t.getContext(); // ← await it
       await fetch(`${ANALYTICS_API}/track`, {
