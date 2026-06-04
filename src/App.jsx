@@ -178,7 +178,7 @@ function PopupFrame() {
       });
       await t.set("board", "shared", "snInstallTracked", false);
     } catch (e) {
-      console.warn("⚠️ Uninstall track failed", e);
+      console.warn("Uninstall track failed", e);
     }
 
     setAuthState("idle");
