@@ -388,3 +388,4 @@ export default function App() {
   if (view === "card-notes") return <CardNotesFrame />;
   return <InitFrame />;
 }
+//test
