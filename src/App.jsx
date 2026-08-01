@@ -320,9 +320,33 @@ function CardNotesFrame() {
   return (
     <div className="card-notes">
       {/* Header */}
-      {/* <div className="card-notes__header">
-        <h3>🔒 Secure Notes</h3>
-      </div> */}
+      <div className="card-notes__topbar">
+        <div className="card-notes__title-group">
+          <span className="card-notes__lock">🔒</span>
+          <h3 className="card-notes__title">Secure Notes</h3>
+          <span className="card-notes__badge">AES-256</span>
+        </div>
+        <div className="card-notes__header-actions">
+          {/* TODO: wire up multi-note support */}
+          <button
+            className="btn-add-note"
+            onClick={() =>
+              console.log("Add Another Secure Note - not implemented yet")
+            }
+          >
+            + Add Another Secure Note
+          </button>
+          {/* TODO: wire up access management */}
+          <button
+            className="btn-manage"
+            onClick={() => console.log("Manage Access - not implemented yet")}
+          >
+            👥 Manage Access
+          </button>
+        </div>
+      </div>
+
+      {/* ----------- VIEW MODE ----------- */}
 
       {/* ----------- VIEW MODE ----------- */}
       {!isEditing && (
@@ -339,9 +363,24 @@ function CardNotesFrame() {
 
           <div className="card-notes__footer">
             <button className="btn-save" onClick={() => setIsEditing(true)}>
-              Edit
+              Edit Note
             </button>
-            <span className="hint">Only you can see this private note</span>
+            {/* TODO: replace with real sharing data once access management is built */}
+            <div className="card-notes__share-info">
+              <span className="hint">Only you can see this private note</span>
+              <div className="avatar-group">
+                <span className="avatar-dot" />
+              </div>
+              <a
+                className="link-change"
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("Change access - not implemented yet");
+                }}
+              >
+                Change
+              </a>
+            </div>
             {saved && <span className="saved">Saved!</span>}
           </div>
         </>
