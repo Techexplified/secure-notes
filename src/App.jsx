@@ -349,9 +349,21 @@ function CardNotesFrame() {
       {/* ----------- VIEW MODE ----------- */}
 
       {/* ----------- VIEW MODE ----------- */}
+      {/* ----------- VIEW MODE ----------- */}
       {!isEditing && (
         <>
           <div className="card-notes__display">
+            {note && (
+              <div className="card-notes__display-header">
+                {/* TODO: wire up real file attachment support */}
+                <button
+                  className="btn-attach"
+                  onClick={() => console.log("Attach - not implemented yet")}
+                >
+                  📎 Attach
+                </button>
+              </div>
+            )}
             {note ? (
               <p className="note-text">{note}</p>
             ) : (
