@@ -236,63 +236,38 @@ function PopupFrame() {
   );
 }
 
-function CardNotesFrame() {
-  const [note, setNote] = useState("");
+function generateNoteId() {
+  return `note_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function SecureNoteItem({ note, onSave }) {
+  const [text, setText] = useState(note.text);
+  const [isEditing, setIsEditing] = useState(!!note.isNew);
   const [saved, setSaved] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const t = window.TrelloPowerUp.iframe();
 
-  // Load the existing private note
-  useEffect(() => {
-    async function loadNote() {
-      const existingNote = await t.get("card", "private", "secureNote");
-      if (existingNote) {
-        setNote(existingNote);
-      }
-      t.sizeTo(document.body).catch(() => {});
-    }
-    loadNote();
-  }, []);
-
-  // Adjust iframe height when mode changes
-  useEffect(() => {
-    t.sizeTo(document.body).catch(() => {});
-  }, [isEditing, note]);
-
-  // Save the note
   const handleSave = async () => {
-    await t.set("card", "private", "secureNote", note);
+    await onSave(note.id, text);
     setSaved(true);
     setIsEditing(false);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  // Copy note to clipboard
   const handleCopy = () => {
-    if (!note || !note.trim()) return;
-
+    if (!text || !text.trim()) return;
     try {
-      // Create a temporary textarea element
       const textArea = document.createElement("textarea");
-      textArea.value = note;
-
-      // Prevent the textarea from affecting layout
+      textArea.value = text;
       textArea.style.position = "fixed";
       textArea.style.top = "-1000px";
       textArea.style.left = "-1000px";
       textArea.style.opacity = "0";
-
       document.body.appendChild(textArea);
-
-      // Select and copy the text
       textArea.focus();
       textArea.select();
       const successful = document.execCommand("copy");
-
-      // Clean up
       document.body.removeChild(textArea);
-
       if (successful) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -303,65 +278,35 @@ function CardNotesFrame() {
       console.error("Failed to copy text:", err);
     }
   };
-  // Share note to card comments
-  const handleShare = async () => {
-    if (!note.trim()) return;
 
+  const handleShare = async () => {
+    if (!text.trim()) return;
     const card = await t.card("id");
     const token = await t.loadSecret("trello_token");
-
     await fetch(
       `https://api.trello.com/1/cards/${card.id}/actions/comments?text=${encodeURIComponent(
-        note,
+        text,
       )}&key=${import.meta.env.VITE_TRELLO_API_KEY}&token=${token}`,
       { method: "POST" },
     );
   };
 
   return (
-    <div className="card-notes">
-      {/* Header */}
-      <div className="card-notes__topbar">
-        <div className="card-notes__title-group">
-          <Lock size={15} className="card-notes__lock" />
-          <h3 className="card-notes__title">Secure Notes</h3>
-          <span className="card-notes__badge">AES-256</span>
-        </div>
-        <div className="card-notes__header-actions">
-          {/* TODO: wire up multi-note support */}
-          <button
-            className="btn-add-note"
-            onClick={() =>
-              console.log("Add Another Secure Note - not implemented yet")
-            }
-          >
-            <Plus size={14} /> Add Another Secure Note
-          </button>
-          {/* TODO: wire up access management */}
-          <button
-            className="btn-manage"
-            onClick={() => console.log("Manage Access - not implemented yet")}
-          >
-            <Users size={14} /> Manage Access
-          </button>
-          {/* TODO: wire up real file attachment support */}
-          {note && (
-            <button
-              className="btn-attach"
-              onClick={() => console.log("Attach - not implemented yet")}
-            >
-              <Paperclip size={14} /> Attach
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* ----------- VIEW MODE ----------- */}
+    <div className="card-notes__note">
       {!isEditing && (
         <>
           <div className="card-notes__display">
-            {note ? (
-              <p className="note-text">{note}</p>
+            <div className="card-notes__display-header">
+              {/* TODO: wire up real file attachment support */}
+              <button
+                className="btn-attach"
+                onClick={() => console.log("Attach - not implemented yet")}
+              >
+                <Paperclip size={14} /> Attach
+              </button>
+            </div>
+            {text ? (
+              <p className="note-text">{text}</p>
             ) : (
               <p className="note-placeholder">
                 Click 'Edit' to add a private note...
@@ -373,7 +318,6 @@ function CardNotesFrame() {
             <button className="btn-save" onClick={() => setIsEditing(true)}>
               Edit Note
             </button>
-            {/* TODO: replace with real sharing data once access management is built */}
             <div className="card-notes__share-info">
               <span className="hint">Only you can see this private note</span>
               <div className="avatar-group">
@@ -394,14 +338,13 @@ function CardNotesFrame() {
         </>
       )}
 
-      {/* ----------- EDIT MODE ----------- */}
       {isEditing && (
         <>
           <textarea
             className="card-notes__textarea"
             placeholder="Write your private note here..."
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
           />
 
           <div className="card-notes__actions">
@@ -425,6 +368,100 @@ function CardNotesFrame() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function CardNotesFrame() {
+  const [notes, setNotes] = useState([]);
+  const t = window.TrelloPowerUp.iframe();
+
+  // Load notes, migrating the legacy single-note format if present
+  useEffect(() => {
+    async function loadNotes() {
+      const existingNotes = await t
+        .get("card", "private", "secureNotes")
+        .catch(() => null);
+
+      if (Array.isArray(existingNotes) && existingNotes.length > 0) {
+        setNotes(existingNotes);
+      } else {
+        const legacyNote = await t
+          .get("card", "private", "secureNote")
+          .catch(() => null);
+
+        if (legacyNote) {
+          const migrated = [{ id: generateNoteId(), text: legacyNote }];
+          setNotes(migrated);
+          await t.set("card", "private", "secureNotes", migrated);
+        }
+      }
+      t.sizeTo(document.body).catch(() => {});
+    }
+    loadNotes();
+  }, []);
+
+  useEffect(() => {
+    t.sizeTo(document.body).catch(() => {});
+  }, [notes]);
+
+  const persistNotes = async (updatedNotes) => {
+    setNotes(updatedNotes);
+    await t.set("card", "private", "secureNotes", updatedNotes);
+  };
+
+  const handleSaveNote = async (id, text) => {
+    const exists = notes.some((n) => n.id === id);
+    const updated = exists
+      ? notes.map((n) => (n.id === id ? { ...n, text, isNew: false } : n))
+      : [...notes, { id, text, isNew: false }];
+    await persistNotes(updated);
+  };
+
+  const handleAddNote = () => {
+    setNotes((prev) => [
+      ...prev,
+      { id: generateNoteId(), text: "", isNew: true },
+    ]);
+    // Not persisted to storage until the user hits Save on it —
+    // so an abandoned empty note doesn't clutter the stored list.
+  };
+
+  return (
+    <div className="card-notes">
+      <div className="card-notes__topbar">
+        <div className="card-notes__title-group">
+          <Lock size={15} className="card-notes__lock" />
+          <h3 className="card-notes__title">Secure Notes</h3>
+          <span className="card-notes__badge">AES-256</span>
+        </div>
+        <div className="card-notes__header-actions">
+          <button className="btn-add-note" onClick={handleAddNote}>
+            <Plus size={14} /> Add Another Secure Note
+          </button>
+          <button
+            className="btn-manage"
+            onClick={() => console.log("Manage Access - not implemented yet")}
+          >
+            <Users size={14} /> Manage Access
+          </button>
+        </div>
+      </div>
+
+      {notes.length === 0 && (
+        <div className="card-notes__note">
+          <div className="card-notes__display">
+            <p className="note-placeholder">
+              Click 'Add Another Secure Note' to create your first private
+              note...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {notes.map((note) => (
+        <SecureNoteItem key={note.id} note={note} onSave={handleSaveNote} />
+      ))}
     </div>
   );
 }

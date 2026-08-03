@@ -408,3 +408,13 @@ body,
 .link-change:hover {
   text-decoration: underline;
 }
+
+.card-notes__note + .card-notes__note {
+  margin-top: 14px;
+}
+
+.card-notes__display-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
