@@ -203,12 +203,6 @@ body,
   margin-bottom: 10px;
 }
 
-.card-notes__display-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
 .btn-attach {
   display: inline-flex;
   align-items: center;
@@ -323,7 +317,7 @@ body,
 }
 
 .card-notes__lock {
-  font-size: 15px;
+  flex-shrink: 0;
 }
 
 .card-notes__title {

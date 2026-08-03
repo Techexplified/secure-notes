@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Lock, Plus, Users, Paperclip } from "lucide-react";
 import "./App.css";
 
 const API_KEY = import.meta.env.VITE_TRELLO_API_KEY;
@@ -322,7 +323,7 @@ function CardNotesFrame() {
       {/* Header */}
       <div className="card-notes__topbar">
         <div className="card-notes__title-group">
-          <span className="card-notes__lock">🔒</span>
+          <Lock size={15} className="card-notes__lock" />
           <h3 className="card-notes__title">Secure Notes</h3>
           <span className="card-notes__badge">AES-256</span>
         </div>
@@ -334,36 +335,31 @@ function CardNotesFrame() {
               console.log("Add Another Secure Note - not implemented yet")
             }
           >
-            + Add Another Secure Note
+            <Plus size={14} /> Add Another Secure Note
           </button>
           {/* TODO: wire up access management */}
           <button
             className="btn-manage"
             onClick={() => console.log("Manage Access - not implemented yet")}
           >
-            👥 Manage Access
+            <Users size={14} /> Manage Access
           </button>
+          {/* TODO: wire up real file attachment support */}
+          {note && (
+            <button
+              className="btn-attach"
+              onClick={() => console.log("Attach - not implemented yet")}
+            >
+              <Paperclip size={14} /> Attach
+            </button>
+          )}
         </div>
       </div>
 
       {/* ----------- VIEW MODE ----------- */}
-
-      {/* ----------- VIEW MODE ----------- */}
-      {/* ----------- VIEW MODE ----------- */}
       {!isEditing && (
         <>
           <div className="card-notes__display">
-            {note && (
-              <div className="card-notes__display-header">
-                {/* TODO: wire up real file attachment support */}
-                <button
-                  className="btn-attach"
-                  onClick={() => console.log("Attach - not implemented yet")}
-                >
-                  📎 Attach
-                </button>
-              </div>
-            )}
             {note ? (
               <p className="note-text">{note}</p>
             ) : (
