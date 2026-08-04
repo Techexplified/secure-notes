@@ -430,11 +430,11 @@ function CardNotesFrame() {
   return (
     <div className="card-notes">
       <div className="card-notes__topbar">
-        <div className="card-notes__title-group">
+        {/* <div className="card-notes__title-group">
           <Lock size={15} className="card-notes__lock" />
           <h3 className="card-notes__title">Secure Notes</h3>
           <span className="card-notes__badge">AES-256</span>
-        </div>
+        </div> */}
         <div className="card-notes__header-actions">
           <button className="btn-add-note" onClick={handleAddNote}>
             <Plus size={14} /> Add Another Secure Note
