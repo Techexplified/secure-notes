@@ -448,20 +448,22 @@ function CardNotesFrame() {
         </div>
       </div>
 
-      {notes.length === 0 && (
-        <div className="card-notes__note">
-          <div className="card-notes__display">
-            <p className="note-placeholder">
-              Click 'Add Another Secure Note' to create your first private
-              note...
-            </p>
+      <div className="card-notes__notes-list">
+        {notes.length === 0 && (
+          <div className="card-notes__note">
+            <div className="card-notes__display">
+              <p className="note-placeholder">
+                Click 'Add Another Secure Note' to create your first private
+                note...
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {notes.map((note) => (
-        <SecureNoteItem key={note.id} note={note} onSave={handleSaveNote} />
-      ))}
+        {notes.map((note) => (
+          <SecureNoteItem key={note.id} note={note} onSave={handleSaveNote} />
+        ))}
+      </div>
     </div>
   );
 }

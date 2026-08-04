@@ -418,3 +418,23 @@ body,
   justify-content: flex-end;
   margin-bottom: 8px;
 }
+
+.card-notes__notes-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.card-notes__notes-list::-webkit-scrollbar {
+  width: 6px;
+}
+.card-notes__notes-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.card-notes__notes-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+.card-notes__notes-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
