@@ -316,33 +316,6 @@ body.is-popup #root {
   flex-wrap: wrap;
 }
 
-.card-notes__title-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-notes__lock {
-  flex-shrink: 0;
-}
-
-.card-notes__title {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0;
-}
-
-.card-notes__badge {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: var(--ok);
-  background: var(--ok-bg);
-  border: 1px solid var(--ok);
-  border-radius: 999px;
-  padding: 2px 8px;
-}
-
 .card-notes__header-actions {
   display: flex;
   align-items: center;

@@ -295,11 +295,6 @@ function SecureNoteItem({ note, onSave, onAdd }) {
     <div className="card-notes__note-card">
       {/* Each note gets its own full header — including its own Add/Manage buttons */}
       <div className="card-notes__topbar">
-        {/* <div className="card-notes__title-group">
-          <Lock size={15} className="card-notes__lock" />
-          <h3 className="card-notes__title">Secure Notes</h3>
-          <span className="card-notes__badge">AES-256</span>
-        </div> */}
         <div className="card-notes__header-actions">
           <button className="btn-add-note" onClick={onAdd}>
             <Plus size={14} /> Add Another Secure Note
