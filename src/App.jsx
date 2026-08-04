@@ -240,7 +240,7 @@ function generateNoteId() {
   return `note_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function SecureNoteItem({ note, onSave }) {
+function SecureNoteItem({ note, onSave, onAdd }) {
   const [text, setText] = useState(note.text);
   const [isEditing, setIsEditing] = useState(!!note.isNew);
   const [saved, setSaved] = useState(false);
@@ -292,7 +292,27 @@ function SecureNoteItem({ note, onSave }) {
   };
 
   return (
-    <div className="card-notes__note">
+    <div className="card-notes__note-card">
+      {/* Each note gets its own full header — including its own Add/Manage buttons */}
+      <div className="card-notes__topbar">
+        <div className="card-notes__title-group">
+          <Lock size={15} className="card-notes__lock" />
+          <h3 className="card-notes__title">Secure Notes</h3>
+          <span className="card-notes__badge">AES-256</span>
+        </div>
+        <div className="card-notes__header-actions">
+          <button className="btn-add-note" onClick={onAdd}>
+            <Plus size={14} /> Add Another Secure Note
+          </button>
+          <button
+            className="btn-manage"
+            onClick={() => console.log("Manage Access - not implemented yet")}
+          >
+            <Users size={14} /> Manage Access
+          </button>
+        </div>
+      </div>
+
       {!isEditing && (
         <>
           <div className="card-notes__display">
@@ -376,7 +396,6 @@ function CardNotesFrame() {
   const [notes, setNotes] = useState([]);
   const t = window.TrelloPowerUp.iframe();
 
-  // Load notes, migrating the legacy single-note format if present
   useEffect(() => {
     async function loadNotes() {
       const existingNotes = await t
@@ -394,15 +413,20 @@ function CardNotesFrame() {
           const migrated = [{ id: generateNoteId(), text: legacyNote }];
           setNotes(migrated);
           await t.set("card", "private", "secureNotes", migrated);
+        } else {
+          setNotes([{ id: generateNoteId(), text: "", isNew: false }]);
         }
       }
-      t.sizeTo(document.body).catch(() => {});
     }
     loadNotes();
   }, []);
 
+  // Resize on every notes change, after the DOM has actually painted
   useEffect(() => {
-    t.sizeTo(document.body).catch(() => {});
+    const raf = requestAnimationFrame(() => {
+      t.sizeTo(document.body).catch(() => {});
+    });
+    return () => cancelAnimationFrame(raf);
   }, [notes]);
 
   const persistNotes = async (updatedNotes) => {
@@ -423,47 +447,18 @@ function CardNotesFrame() {
       ...prev,
       { id: generateNoteId(), text: "", isNew: true },
     ]);
-    // Not persisted to storage until the user hits Save on it —
-    // so an abandoned empty note doesn't clutter the stored list.
   };
 
   return (
     <div className="card-notes">
-      <div className="card-notes__topbar">
-        {/* <div className="card-notes__title-group">
-          <Lock size={15} className="card-notes__lock" />
-          <h3 className="card-notes__title">Secure Notes</h3>
-          <span className="card-notes__badge">AES-256</span>
-        </div> */}
-        <div className="card-notes__header-actions">
-          <button className="btn-add-note" onClick={handleAddNote}>
-            <Plus size={14} /> Add Another Secure Note
-          </button>
-          <button
-            className="btn-manage"
-            onClick={() => console.log("Manage Access - not implemented yet")}
-          >
-            <Users size={14} /> Manage Access
-          </button>
-        </div>
-      </div>
-
-      <div className="card-notes__notes-list">
-        {notes.length === 0 && (
-          <div className="card-notes__note">
-            <div className="card-notes__display">
-              <p className="note-placeholder">
-                Click 'Add Another Secure Note' to create your first private
-                note...
-              </p>
-            </div>
-          </div>
-        )}
-
-        {notes.map((note) => (
-          <SecureNoteItem key={note.id} note={note} onSave={handleSaveNote} />
-        ))}
-      </div>
+      {notes.map((note) => (
+        <SecureNoteItem
+          key={note.id}
+          note={note}
+          onSave={handleSaveNote}
+          onAdd={handleAddNote}
+        />
+      ))}
     </div>
   );
 }

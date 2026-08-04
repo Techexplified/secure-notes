@@ -409,32 +409,19 @@ body,
   text-decoration: underline;
 }
 
-.card-notes__note + .card-notes__note {
-  margin-top: 14px;
-}
-
 .card-notes__display-header {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 8px;
 }
 
-.card-notes__notes-list {
-  max-height: 260px;
-  overflow-y: auto;
-  padding-right: 4px;
+.card-notes__note-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  background: var(--surface);
 }
 
-.card-notes__notes-list::-webkit-scrollbar {
-  width: 6px;
-}
-.card-notes__notes-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-.card-notes__notes-list::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 999px;
-}
-.card-notes__notes-list::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+.card-notes__note-card + .card-notes__note-card {
+  margin-top: 16px;
 }
