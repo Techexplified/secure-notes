@@ -415,12 +415,6 @@ body.is-popup #root {
   text-decoration: underline;
 }
 
-.card-notes__display-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
 .card-notes__note-card {
   border: 1px solid var(--border);
   border-radius: var(--radius);
