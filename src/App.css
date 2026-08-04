@@ -214,14 +214,14 @@ body.is-popup #root {
 .btn-attach {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: transparent;
   color: var(--note-accent);
   border: 1px solid var(--note-accent);
-  padding: 11px 18px;
-  border-radius: 9px;
-  font-size: 14px;
-  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -352,10 +352,10 @@ body.is-popup #root {
   background: linear-gradient(135deg, #5b52f0, var(--note-accent));
   color: #ffffff;
   border: none;
-  padding: 11px 20px;
-  border-radius: 9px;
-  font-size: 14px;
-  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -366,14 +366,14 @@ body.is-popup #root {
 .btn-manage {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--sn-surface-alt);
   color: var(--sn-text);
   border: 1px solid var(--sn-border);
-  padding: 11px 18px;
-  border-radius: 9px;
-  font-size: 14px;
-  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
