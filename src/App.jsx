@@ -465,8 +465,14 @@ function CardNotesFrame() {
 
 export default function App() {
   const view = getView();
+
+  useEffect(() => {
+    if (view === "popup") {
+      document.body.classList.add("is-popup");
+    }
+  }, [view]);
+
   if (view === "popup") return <PopupFrame />;
   if (view === "card-notes") return <CardNotesFrame />;
   return <InitFrame />;
 }
-//test

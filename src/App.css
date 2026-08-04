@@ -38,14 +38,20 @@ body,
 html,
 body,
 #root {
-  height: 100%;
-  /* background: var(--bg);
-  color: var(--text); */
   font-family: var(--font);
   font-size: 14px;
-  overflow: hidden;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Only the fixed-size popup view should be capped/non-scrolling.
+   Other views (e.g. the card-back Secure Notes iframe) must be
+   free to grow to their natural content height, or t.sizeTo()
+   has nothing accurate to measure. */
+body.is-popup,
+body.is-popup #root {
+  height: 100%;
+  overflow: hidden;
 }
 
 /* ── Popup container ─────────────────────────────────────── */
