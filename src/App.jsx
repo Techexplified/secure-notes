@@ -252,7 +252,7 @@ function generateNoteId() {
 }
 
 // ── NEW ACCESS MANAGEMENT MODAL COMPONENT ──
-function AccessManagementModal({ onClose, t }) {
+function ManageAccessFrame() {
   const t = window.TrelloPowerUp.iframe();
   const [scope, setScope] = useState("private");
   const [members, setMembers] = useState([]);
@@ -490,10 +490,9 @@ function SecureNoteItem({ note, onSave, onAdd }) {
   };
 
   const handleOpenAccessModal = () => {
-    // Open the new route using Trello's native modal API
     t.modal({
       url: `./index.html?view=manage-access&noteId=${note.id}`,
-      height: 520, // This height fits the reduced padding/spacing
+      height: 520,
     });
   };
 
@@ -505,7 +504,6 @@ function SecureNoteItem({ note, onSave, onAdd }) {
             <Plus size={14} /> Add Another Secure Note
           </button>
 
-          {/* Changed onClick trigger here */}
           <button className="btn-manage" onClick={handleOpenAccessModal}>
             <Users size={14} /> Manage Access
           </button>
@@ -544,7 +542,6 @@ function SecureNoteItem({ note, onSave, onAdd }) {
                 className="link-change"
                 onClick={(e) => {
                   e.preventDefault();
-                  // Also trigger modal here if they click "Change"
                   handleOpenAccessModal();
                 }}
               >
@@ -565,8 +562,20 @@ function SecureNoteItem({ note, onSave, onAdd }) {
             onChange={(e) => setText(e.target.value)}
           />
 
+          {/* Restored Action Buttons Here */}
           <div className="card-notes__actions">
-            {/* Note actions remain the same */}
+            <button className="btn-save" onClick={handleSave}>
+              Save Note
+            </button>
+            <button className="btn-secondary" onClick={handleCopy}>
+              {copied ? "Copied!" : "Copy"}
+            </button>
+            <button className="btn-secondary" onClick={handleShare}>
+              Share as Comment
+            </button>
+            <button className="btn-cancel" onClick={() => setIsEditing(false)}>
+              Cancel
+            </button>
           </div>
 
           <div className="card-notes__footer">
