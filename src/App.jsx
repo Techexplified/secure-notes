@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
-import { Lock, Plus, Users, Paperclip } from "lucide-react";
+import {
+  Lock,
+  Plus,
+  Users,
+  Paperclip,
+  UserPlus,
+  Globe,
+  X,
+  Search,
+  Info,
+  Check,
+} from "lucide-react";
 import "./App.css";
 
 const API_KEY = import.meta.env.VITE_TRELLO_API_KEY;
@@ -240,11 +251,202 @@ function generateNoteId() {
   return `note_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// ── NEW ACCESS MANAGEMENT MODAL COMPONENT ──
+function AccessManagementModal({ onClose, t }) {
+  const [scope, setScope] = useState("private");
+  const [members, setMembers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMembers, setSelectedMembers] = useState(new Set());
+  const [accessLevels, setAccessLevels] = useState({});
+
+  useEffect(() => {
+    // Fetch real board members from Trello context
+    t.board("members")
+      .then((boardData) => {
+        if (boardData && boardData.members) {
+          setMembers(boardData.members);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load members from Trello", err);
+      });
+  }, [t]);
+
+  const filteredMembers = members.filter(
+    (m) =>
+      m.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.username.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const toggleMember = (id) => {
+    const newSet = new Set(selectedMembers);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedMembers(newSet);
+  };
+
+  const setAccess = (id, level) => {
+    setAccessLevels((prev) => ({ ...prev, [id]: level }));
+  };
+
+  const handleApply = () => {
+    // You can attach your saving/permission logic here later.
+    console.log("Applying rules for scope:", scope, {
+      selectedMembers,
+      accessLevels,
+    });
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <div className="modal-header-left">
+            <div className="modal-header-icon">
+              <Users size={20} />
+            </div>
+            <div className="modal-title-group">
+              <h2>Board Access Management</h2>
+              <p>Control access rights for this encrypted note</p>
+            </div>
+          </div>
+          <button className="btn-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="modal-body">
+          <div className="section-title">ACCESS SCOPE POLICY</div>
+          <div className="scope-grid">
+            <div
+              className={`scope-btn ${scope === "private" ? "active" : ""}`}
+              onClick={() => setScope("private")}
+            >
+              <Lock size={24} />
+              <span className="scope-title">Private</span>
+              <span className="scope-subtitle">Note Owner Only</span>
+            </div>
+            <div
+              className={`scope-btn ${scope === "custom" ? "active" : ""}`}
+              onClick={() => setScope("custom")}
+            >
+              <UserPlus size={24} />
+              <span className="scope-title">Custom List</span>
+              <span className="scope-subtitle">Selected Members</span>
+            </div>
+            <div
+              className={`scope-btn ${scope === "board" ? "active" : ""}`}
+              onClick={() => setScope("board")}
+            >
+              <Globe size={24} />
+              <span className="scope-title">Entire Board</span>
+              <span className="scope-subtitle">All Board Members</span>
+            </div>
+          </div>
+
+          {scope === "board" && (
+            <div className="info-banner">
+              <Info size={18} />
+              <p>
+                <strong>Board Policy:</strong> All members on this Trello board
+                will be able to view this secure note once decrypted.
+              </p>
+            </div>
+          )}
+
+          {scope === "custom" && (
+            <div className="custom-list-container">
+              <div className="custom-list-header">
+                <h3>Grant Member Access</h3>
+                <span className="granted-badge">
+                  {selectedMembers.size} member
+                  {selectedMembers.size !== 1 ? "s" : ""} granted
+                </span>
+              </div>
+              <div className="search-input-wrapper">
+                <Search size={16} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search board members..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="members-list">
+                {filteredMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className={`member-item ${
+                      selectedMembers.has(member.id) ? "selected" : ""
+                    }`}
+                  >
+                    <div
+                      className={`checkbox ${
+                        selectedMembers.has(member.id) ? "checked" : ""
+                      }`}
+                      onClick={() => toggleMember(member.id)}
+                    >
+                      {selectedMembers.has(member.id) && <Check size={12} />}
+                    </div>
+                    <div className="member-avatar">
+                      {member.avatarUrl ? (
+                        <img src={member.avatarUrl} alt={member.fullName} />
+                      ) : (
+                        member.fullName.charAt(0)
+                      )}
+                    </div>
+                    <div className="member-info">
+                      <div className="member-name-row">
+                        <span className="member-name">{member.fullName}</span>
+                        {/* Identify board admins */}
+                        {member.memberType === "admin" && (
+                          <span className="role-badge owner">ADMIN</span>
+                        )}
+                      </div>
+                      <span className="member-handle">
+                        @{member.username} •{" "}
+                        {member.memberType === "admin" ? "Admin" : "Member"}
+                      </span>
+                    </div>
+                    {selectedMembers.has(member.id) && (
+                      <select
+                        className="access-dropdown"
+                        value={accessLevels[member.id] || "full"}
+                        onChange={(e) => setAccess(member.id, e.target.value)}
+                      >
+                        <option value="full">Full Access (Edit)</option>
+                        <option value="view">View Only</option>
+                      </select>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn-modal-cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="btn-modal-apply" onClick={handleApply}>
+            <Check size={16} /> Apply Access Rules
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SecureNoteItem({ note, onSave, onAdd }) {
   const [text, setText] = useState(note.text);
   const [isEditing, setIsEditing] = useState(!!note.isNew);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  // Track modal visibility state
+  const [showAccessModal, setShowAccessModal] = useState(false);
   const t = window.TrelloPowerUp.iframe();
 
   const handleSave = async () => {
@@ -293,7 +495,14 @@ function SecureNoteItem({ note, onSave, onAdd }) {
 
   return (
     <div className="card-notes__note-card">
-      {/* Each note gets its own full header — including its own Add/Manage buttons */}
+      {/* Render the modal over the entire window if active */}
+      {showAccessModal && (
+        <AccessManagementModal
+          onClose={() => setShowAccessModal(false)}
+          t={t}
+        />
+      )}
+
       <div className="card-notes__topbar">
         <div className="card-notes__header-actions">
           <button className="btn-add-note" onClick={onAdd}>
@@ -301,19 +510,17 @@ function SecureNoteItem({ note, onSave, onAdd }) {
           </button>
           <button
             className="btn-manage"
-            onClick={() => console.log("Manage Access - not implemented yet")}
+            onClick={() => setShowAccessModal(true)}
           >
             <Users size={14} /> Manage Access
           </button>
           {/* TODO: wire up real file attachment support */}
-          {/* {text && ( */}
           <button
             className="btn-attach"
             onClick={() => console.log("Attach - not implemented yet")}
           >
             <Paperclip size={14} /> Attach
           </button>
-          {/* )} */}
         </div>
       </div>
 
@@ -342,7 +549,7 @@ function SecureNoteItem({ note, onSave, onAdd }) {
                 className="link-change"
                 onClick={(e) => {
                   e.preventDefault();
-                  console.log("Change access - not implemented yet");
+                  setShowAccessModal(true);
                 }}
               >
                 Change
