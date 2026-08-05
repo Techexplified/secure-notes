@@ -423,76 +423,57 @@ body.is-popup #root {
 .card-notes__note-card + .card-notes__note-card {
   margin-top: 16px;
 }
-
-/* ── Access Management Modal ─────────────────────────────── */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  padding: 20px;
-  animation: fadeIn 0.15s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-content {
+/* ── Access Management Frame (Inside t.modal) ─────────────────────────────── */
+body.is-modal,
+body.is-modal #root {
+  height: 100%;
   background-color: var(--sn-surface-alt);
-  border: 1px solid var(--sn-border);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 540px;
+  margin: 0;
+  overflow: hidden;
+}
+
+.manage-access-frame {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  height: 100vh;
+  background-color: var(--sn-surface-alt);
+  color: #ffffff;
 }
 
+/* Reduced header padding */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 20px 24px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--sn-border);
 }
 
 .modal-header-left {
   display: flex;
-  gap: 14px;
+  gap: 12px;
 }
 
 .modal-header-icon {
   background: rgba(109, 94, 252, 0.1);
   color: var(--note-accent);
-  padding: 10px;
-  border-radius: 10px;
+  padding: 8px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .modal-title-group h2 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   color: #ffffff;
 }
 
 .modal-title-group p {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--sn-text-muted);
 }
 
@@ -512,8 +493,11 @@ body.is-popup #root {
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Reduced body padding */
 .modal-body {
-  padding: 24px;
+  padding: 16px 20px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .section-title {
@@ -521,26 +505,27 @@ body.is-popup #root {
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--sn-text-muted);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   font-weight: 700;
 }
 
+/* Tighter grid and smaller buttons */
 .scope-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .scope-btn {
   background: var(--sn-surface);
   border: 1px solid var(--sn-border);
   border-radius: 10px;
-  padding: 20px 8px;
+  padding: 12px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -573,14 +558,14 @@ body.is-popup #root {
   color: var(--sn-text-muted);
 }
 
-/* ── Info Banner (Entire Board) ── */
+/* Tighter Info Banner */
 .info-banner {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   background: rgba(109, 94, 252, 0.08);
   border: 1px solid rgba(109, 94, 252, 0.2);
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   align-items: flex-start;
 }
 
@@ -594,7 +579,7 @@ body.is-popup #root {
   margin: 0;
   font-size: 13px;
   color: #d0d4e4;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .info-banner strong {
@@ -602,19 +587,19 @@ body.is-popup #root {
   font-weight: 600;
 }
 
-/* ── Custom List ── */
+/* Tighter Custom List Container */
 .custom-list-container {
   background: var(--sn-surface);
   border: 1px solid var(--sn-border);
   border-radius: 10px;
-  padding: 16px;
+  padding: 12px;
 }
 
 .custom-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .custom-list-header h3 {
@@ -635,15 +620,17 @@ body.is-popup #root {
 
 .search-input-wrapper {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .search-input-wrapper svg {
   position: absolute;
-  left: 12px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--sn-text-muted);
+  width: 14px;
+  height: 14px;
 }
 
 .search-input {
@@ -651,7 +638,7 @@ body.is-popup #root {
   background: var(--sn-surface-alt);
   border: 1px solid var(--sn-border);
   border-radius: 6px;
-  padding: 10px 12px 10px 36px;
+  padding: 8px 12px 8px 32px;
   color: #ffffff;
   font-family: var(--font);
   font-size: 13px;
@@ -663,16 +650,12 @@ body.is-popup #root {
   border-color: var(--note-accent);
 }
 
-.search-input::placeholder {
-  color: var(--sn-text-muted);
-}
-
 .members-list {
-  max-height: 220px;
+  max-height: 180px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   padding-right: 4px;
 }
 
@@ -687,8 +670,8 @@ body.is-popup #root {
 .member-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px;
+  gap: 10px;
+  padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid transparent;
   transition: all 0.2s;
@@ -705,15 +688,14 @@ body.is-popup #root {
 }
 
 .checkbox {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border: 2px solid var(--sn-border);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .checkbox.checked {
@@ -723,13 +705,13 @@ body.is-popup #root {
 
 .checkbox svg {
   color: #ffffff;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 .member-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--sn-border);
   display: flex;
@@ -737,7 +719,7 @@ body.is-popup #root {
   justify-content: center;
   font-weight: 600;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   overflow: hidden;
 }
 
@@ -756,7 +738,7 @@ body.is-popup #root {
 .member-name-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .member-name {
@@ -783,23 +765,22 @@ body.is-popup #root {
 .member-handle {
   font-size: 11px;
   color: var(--sn-text-muted);
-  margin-top: 2px;
 }
 
 .access-dropdown {
   background: var(--sn-surface-alt);
   border: 1px solid var(--sn-border);
   color: #ffffff;
-  padding: 6px 10px;
+  padding: 4px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   outline: none;
 }
 
-/* ── Footer ── */
+/* Reduced footer padding */
 .modal-footer {
-  padding: 16px 24px;
+  padding: 12px 20px;
   border-top: 1px solid var(--sn-border);
   display: flex;
   justify-content: space-between;
@@ -823,7 +804,7 @@ body.is-popup #root {
   background: #00a86b;
   color: #ffffff;
   border: none;
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;

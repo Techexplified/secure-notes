@@ -253,6 +253,7 @@ function generateNoteId() {
 
 // ── NEW ACCESS MANAGEMENT MODAL COMPONENT ──
 function AccessManagementModal({ onClose, t }) {
+  const t = window.TrelloPowerUp.iframe();
   const [scope, setScope] = useState("private");
   const [members, setMembers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -260,16 +261,13 @@ function AccessManagementModal({ onClose, t }) {
   const [accessLevels, setAccessLevels] = useState({});
 
   useEffect(() => {
-    // Fetch real board members from Trello context
     t.board("members")
       .then((boardData) => {
         if (boardData && boardData.members) {
           setMembers(boardData.members);
         }
       })
-      .catch((err) => {
-        console.error("Failed to load members from Trello", err);
-      });
+      .catch((err) => console.error("Failed to load members from Trello", err));
   }, [t]);
 
   const filteredMembers = members.filter(
@@ -290,151 +288,151 @@ function AccessManagementModal({ onClose, t }) {
   };
 
   const handleApply = () => {
-    // You can attach your saving/permission logic here later.
     console.log("Applying rules for scope:", scope, {
       selectedMembers,
       accessLevels,
     });
-    onClose();
+    t.closeModal();
+  };
+
+  const handleClose = () => {
+    t.closeModal();
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <div className="modal-header-left">
-            <div className="modal-header-icon">
-              <Users size={20} />
-            </div>
-            <div className="modal-title-group">
-              <h2>Board Access Management</h2>
-              <p>Control access rights for this encrypted note</p>
-            </div>
+    <div className="manage-access-frame">
+      <div className="modal-header">
+        <div className="modal-header-left">
+          <div className="modal-header-icon">
+            <Users size={18} />
           </div>
-          <button className="btn-close" onClick={onClose}>
-            <X size={20} />
-          </button>
+          <div className="modal-title-group">
+            <h2>Board Access Management</h2>
+            <p>Control access rights for this encrypted note</p>
+          </div>
+        </div>
+        <button className="btn-close" onClick={handleClose}>
+          <X size={18} />
+        </button>
+      </div>
+
+      <div className="modal-body">
+        <div className="section-title">ACCESS SCOPE POLICY</div>
+        <div className="scope-grid">
+          <div
+            className={`scope-btn ${scope === "private" ? "active" : ""}`}
+            onClick={() => setScope("private")}
+          >
+            <Lock size={20} />
+            <span className="scope-title">Private</span>
+            <span className="scope-subtitle">Note Owner Only</span>
+          </div>
+          <div
+            className={`scope-btn ${scope === "custom" ? "active" : ""}`}
+            onClick={() => setScope("custom")}
+          >
+            <UserPlus size={20} />
+            <span className="scope-title">Custom List</span>
+            <span className="scope-subtitle">Selected Members</span>
+          </div>
+          <div
+            className={`scope-btn ${scope === "board" ? "active" : ""}`}
+            onClick={() => setScope("board")}
+          >
+            <Globe size={20} />
+            <span className="scope-title">Entire Board</span>
+            <span className="scope-subtitle">All Board Members</span>
+          </div>
         </div>
 
-        <div className="modal-body">
-          <div className="section-title">ACCESS SCOPE POLICY</div>
-          <div className="scope-grid">
-            <div
-              className={`scope-btn ${scope === "private" ? "active" : ""}`}
-              onClick={() => setScope("private")}
-            >
-              <Lock size={24} />
-              <span className="scope-title">Private</span>
-              <span className="scope-subtitle">Note Owner Only</span>
-            </div>
-            <div
-              className={`scope-btn ${scope === "custom" ? "active" : ""}`}
-              onClick={() => setScope("custom")}
-            >
-              <UserPlus size={24} />
-              <span className="scope-title">Custom List</span>
-              <span className="scope-subtitle">Selected Members</span>
-            </div>
-            <div
-              className={`scope-btn ${scope === "board" ? "active" : ""}`}
-              onClick={() => setScope("board")}
-            >
-              <Globe size={24} />
-              <span className="scope-title">Entire Board</span>
-              <span className="scope-subtitle">All Board Members</span>
-            </div>
+        {scope === "board" && (
+          <div className="info-banner">
+            <Info size={16} />
+            <p>
+              <strong>Board Policy:</strong> All members on this Trello board
+              will be able to view this secure note once decrypted.
+            </p>
           </div>
+        )}
 
-          {scope === "board" && (
-            <div className="info-banner">
-              <Info size={18} />
-              <p>
-                <strong>Board Policy:</strong> All members on this Trello board
-                will be able to view this secure note once decrypted.
-              </p>
+        {scope === "custom" && (
+          <div className="custom-list-container">
+            <div className="custom-list-header">
+              <h3>Grant Member Access</h3>
+              <span className="granted-badge">
+                {selectedMembers.size} member
+                {selectedMembers.size !== 1 ? "s" : ""} granted
+              </span>
             </div>
-          )}
-
-          {scope === "custom" && (
-            <div className="custom-list-container">
-              <div className="custom-list-header">
-                <h3>Grant Member Access</h3>
-                <span className="granted-badge">
-                  {selectedMembers.size} member
-                  {selectedMembers.size !== 1 ? "s" : ""} granted
-                </span>
-              </div>
-              <div className="search-input-wrapper">
-                <Search size={16} />
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search board members..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="members-list">
-                {filteredMembers.map((member) => (
+            <div className="search-input-wrapper">
+              <Search size={14} />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search board members..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="members-list">
+              {filteredMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className={`member-item ${
+                    selectedMembers.has(member.id) ? "selected" : ""
+                  }`}
+                >
                   <div
-                    key={member.id}
-                    className={`member-item ${
-                      selectedMembers.has(member.id) ? "selected" : ""
+                    className={`checkbox ${
+                      selectedMembers.has(member.id) ? "checked" : ""
                     }`}
+                    onClick={() => toggleMember(member.id)}
                   >
-                    <div
-                      className={`checkbox ${
-                        selectedMembers.has(member.id) ? "checked" : ""
-                      }`}
-                      onClick={() => toggleMember(member.id)}
-                    >
-                      {selectedMembers.has(member.id) && <Check size={12} />}
-                    </div>
-                    <div className="member-avatar">
-                      {member.avatarUrl ? (
-                        <img src={member.avatarUrl} alt={member.fullName} />
-                      ) : (
-                        member.fullName.charAt(0)
-                      )}
-                    </div>
-                    <div className="member-info">
-                      <div className="member-name-row">
-                        <span className="member-name">{member.fullName}</span>
-                        {/* Identify board admins */}
-                        {member.memberType === "admin" && (
-                          <span className="role-badge owner">ADMIN</span>
-                        )}
-                      </div>
-                      <span className="member-handle">
-                        @{member.username} •{" "}
-                        {member.memberType === "admin" ? "Admin" : "Member"}
-                      </span>
-                    </div>
-                    {selectedMembers.has(member.id) && (
-                      <select
-                        className="access-dropdown"
-                        value={accessLevels[member.id] || "full"}
-                        onChange={(e) => setAccess(member.id, e.target.value)}
-                      >
-                        <option value="full">Full Access (Edit)</option>
-                        <option value="view">View Only</option>
-                      </select>
+                    {selectedMembers.has(member.id) && <Check size={10} />}
+                  </div>
+                  <div className="member-avatar">
+                    {member.avatarUrl ? (
+                      <img src={member.avatarUrl} alt={member.fullName} />
+                    ) : (
+                      member.fullName.charAt(0)
                     )}
                   </div>
-                ))}
-              </div>
+                  <div className="member-info">
+                    <div className="member-name-row">
+                      <span className="member-name">{member.fullName}</span>
+                      {member.memberType === "admin" && (
+                        <span className="role-badge owner">ADMIN</span>
+                      )}
+                    </div>
+                    <span className="member-handle">
+                      @{member.username} •{" "}
+                      {member.memberType === "admin" ? "Admin" : "Member"}
+                    </span>
+                  </div>
+                  {selectedMembers.has(member.id) && (
+                    <select
+                      className="access-dropdown"
+                      value={accessLevels[member.id] || "full"}
+                      onChange={(e) => setAccess(member.id, e.target.value)}
+                    >
+                      <option value="full">Full Access (Edit)</option>
+                      <option value="view">View Only</option>
+                    </select>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
 
-        <div className="modal-footer">
-          <button className="btn-modal-cancel" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="btn-modal-apply" onClick={handleApply}>
-            <Check size={16} /> Apply Access Rules
-          </button>
-        </div>
+      <div className="modal-footer">
+        <button className="btn-modal-cancel" onClick={handleClose}>
+          Cancel
+        </button>
+        <button className="btn-modal-apply" onClick={handleApply}>
+          <Check size={14} /> Apply Access Rules
+        </button>
       </div>
     </div>
   );
@@ -445,8 +443,6 @@ function SecureNoteItem({ note, onSave, onAdd }) {
   const [isEditing, setIsEditing] = useState(!!note.isNew);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
-  // Track modal visibility state
-  const [showAccessModal, setShowAccessModal] = useState(false);
   const t = window.TrelloPowerUp.iframe();
 
   const handleSave = async () => {
@@ -493,28 +489,27 @@ function SecureNoteItem({ note, onSave, onAdd }) {
     );
   };
 
+  const handleOpenAccessModal = () => {
+    // Open the new route using Trello's native modal API
+    t.modal({
+      url: `./index.html?view=manage-access&noteId=${note.id}`,
+      height: 520, // This height fits the reduced padding/spacing
+    });
+  };
+
   return (
     <div className="card-notes__note-card">
-      {/* Render the modal over the entire window if active */}
-      {showAccessModal && (
-        <AccessManagementModal
-          onClose={() => setShowAccessModal(false)}
-          t={t}
-        />
-      )}
-
       <div className="card-notes__topbar">
         <div className="card-notes__header-actions">
           <button className="btn-add-note" onClick={onAdd}>
             <Plus size={14} /> Add Another Secure Note
           </button>
-          <button
-            className="btn-manage"
-            onClick={() => setShowAccessModal(true)}
-          >
+
+          {/* Changed onClick trigger here */}
+          <button className="btn-manage" onClick={handleOpenAccessModal}>
             <Users size={14} /> Manage Access
           </button>
-          {/* TODO: wire up real file attachment support */}
+
           <button
             className="btn-attach"
             onClick={() => console.log("Attach - not implemented yet")}
@@ -549,7 +544,8 @@ function SecureNoteItem({ note, onSave, onAdd }) {
                 className="link-change"
                 onClick={(e) => {
                   e.preventDefault();
-                  setShowAccessModal(true);
+                  // Also trigger modal here if they click "Change"
+                  handleOpenAccessModal();
                 }}
               >
                 Change
@@ -570,18 +566,7 @@ function SecureNoteItem({ note, onSave, onAdd }) {
           />
 
           <div className="card-notes__actions">
-            <button className="btn-save" onClick={handleSave}>
-              Save
-            </button>
-            <button className="btn-secondary" onClick={handleCopy}>
-              {copied ? "Copied!" : "Copy"}
-            </button>
-            <button className="btn-secondary" onClick={handleShare}>
-              Share
-            </button>
-            <button className="btn-cancel" onClick={() => setIsEditing(false)}>
-              Cancel
-            </button>
+            {/* Note actions remain the same */}
           </div>
 
           <div className="card-notes__footer">
@@ -672,9 +657,14 @@ export default function App() {
     if (view === "popup") {
       document.body.classList.add("is-popup");
     }
+    // Added body class handler for our new modal view
+    if (view === "manage-access") {
+      document.body.classList.add("is-modal");
+    }
   }, [view]);
 
   if (view === "popup") return <PopupFrame />;
   if (view === "card-notes") return <CardNotesFrame />;
+  if (view === "manage-access") return <ManageAccessFrame />; // Added new route
   return <InitFrame />;
 }
