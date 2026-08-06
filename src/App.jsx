@@ -251,6 +251,19 @@ function generateNoteId() {
   return `note_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function getNoteAccess(note) {
+  // Legacy / never-shared notes default to private, owner-only
+  return note?.access || { scope: "private", ownerId: null, permissions: {} };
+}
+
+function getMemberPermission(note, memberId) {
+  const access = getNoteAccess(note);
+  if (access.ownerId === memberId) return "full";
+  if (access.scope === "board") return "full";
+  if (access.scope === "custom") return access.permissions?.[memberId] || null;
+  return null; // private scope, not the owner → no access
+}
+
 // ── NEW ACCESS MANAGEMENT MODAL COMPONENT ──
 function ManageAccessFrame() {
   const t = window.TrelloPowerUp.iframe();
@@ -259,6 +272,8 @@ function ManageAccessFrame() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMembers, setSelectedMembers] = useState(new Set());
   const [accessLevels, setAccessLevels] = useState({});
+  const noteId = new URLSearchParams(window.location.search).get("noteId");
+  const [currentMemberId, setCurrentMemberId] = useState(null);
 
   useEffect(() => {
     t.board("members")
@@ -269,6 +284,30 @@ function ManageAccessFrame() {
       })
       .catch((err) => console.error("Failed to load members from Trello", err));
   }, [t]);
+
+  useEffect(() => {
+    async function loadExistingAccess() {
+      const memberId = await t.member("id").catch(() => null);
+      setCurrentMemberId(memberId);
+
+      const [privateNotes, sharedNotes] = await Promise.all([
+        t.get("card", "private", "secureNotes").catch(() => []),
+        t.get("card", "shared", "secureNotes").catch(() => []),
+      ]);
+
+      const existingNote =
+        (sharedNotes || []).find((n) => n.id === noteId) ||
+        (privateNotes || []).find((n) => n.id === noteId);
+
+      const access = existingNote?.access;
+      if (access) {
+        setScope(access.scope || "private");
+        setSelectedMembers(new Set(Object.keys(access.permissions || {})));
+        setAccessLevels(access.permissions || {});
+      }
+    }
+    if (noteId) loadExistingAccess();
+  }, [t, noteId]);
 
   const filteredMembers = members.filter(
     (m) =>
@@ -287,11 +326,63 @@ function ManageAccessFrame() {
     setAccessLevels((prev) => ({ ...prev, [id]: level }));
   };
 
-  const handleApply = () => {
-    console.log("Applying rules for scope:", scope, {
-      selectedMembers,
-      accessLevels,
+  const handleApply = async () => {
+    const permissions = {};
+    selectedMembers.forEach((id) => {
+      permissions[id] = accessLevels[id] || "full";
     });
+
+    const access = {
+      scope,
+      ownerId: currentMemberId,
+      permissions: scope === "custom" ? permissions : {},
+    };
+
+    const [privateNotes, sharedNotes] = await Promise.all([
+      t.get("card", "private", "secureNotes").catch(() => []),
+      t.get("card", "shared", "secureNotes").catch(() => []),
+    ]);
+    const privateList = Array.isArray(privateNotes) ? privateNotes : [];
+    const sharedList = Array.isArray(sharedNotes) ? sharedNotes : [];
+
+    const existingNote =
+      sharedList.find((n) => n.id === noteId) ||
+      privateList.find((n) => n.id === noteId);
+
+    if (!existingNote) {
+      t.closeModal();
+      return;
+    }
+
+    const updatedNote = { ...existingNote, access };
+
+    if (scope === "private") {
+      // Pull the note back into owner-only storage
+      await t.set("card", "private", "secureNotes", [
+        ...privateList.filter((n) => n.id !== noteId),
+        updatedNote,
+      ]);
+      await t.set(
+        "card",
+        "shared",
+        "secureNotes",
+        sharedList.filter((n) => n.id !== noteId),
+      );
+    } else {
+      // "custom" or "board": must live in shared storage so granted
+      // members' clients can actually fetch it
+      await t.set("card", "shared", "secureNotes", [
+        ...sharedList.filter((n) => n.id !== noteId),
+        updatedNote,
+      ]);
+      await t.set(
+        "card",
+        "private",
+        "secureNotes",
+        privateList.filter((n) => n.id !== noteId),
+      );
+    }
+
     t.closeModal();
   };
 
@@ -438,7 +529,7 @@ function ManageAccessFrame() {
   );
 }
 
-function SecureNoteItem({ note, onSave, onAdd }) {
+function SecureNoteItem({ note, onSave, onAdd, permission = "full" }) {
   const [text, setText] = useState(note.text);
   const [isEditing, setIsEditing] = useState(!!note.isNew);
   const [saved, setSaved] = useState(false);
@@ -446,6 +537,7 @@ function SecureNoteItem({ note, onSave, onAdd }) {
   const t = window.TrelloPowerUp.iframe();
 
   const handleSave = async () => {
+    if (permission === "view") return; // safety net
     await onSave(note.id, text);
     setSaved(true);
     setIsEditing(false);
@@ -530,9 +622,11 @@ function SecureNoteItem({ note, onSave, onAdd }) {
           </div>
 
           <div className="card-notes__footer">
-            <button className="btn-save" onClick={() => setIsEditing(true)}>
-              Edit Note
-            </button>
+            {permission !== "view" && (
+              <button className="btn-save" onClick={() => setIsEditing(true)}>
+                Edit Note
+              </button>
+            )}
             <div className="card-notes__share-info">
               <span className="hint">Only you can see this private note</span>
               <div className="avatar-group">
@@ -591,26 +685,55 @@ function SecureNoteItem({ note, onSave, onAdd }) {
 function CardNotesFrame() {
   const [notes, setNotes] = useState([]);
   const t = window.TrelloPowerUp.iframe();
+  const [currentMemberId, setCurrentMemberId] = useState(null);
 
   useEffect(() => {
     async function loadNotes() {
-      const existingNotes = await t
-        .get("card", "private", "secureNotes")
-        .catch(() => null);
+      const memberId = await t.member("id").catch(() => null);
+      setCurrentMemberId(memberId);
 
-      if (Array.isArray(existingNotes) && existingNotes.length > 0) {
-        setNotes(existingNotes);
+      const [privateNotes, sharedNotesRaw] = await Promise.all([
+        t.get("card", "private", "secureNotes").catch(() => null),
+        t.get("card", "shared", "secureNotes").catch(() => null),
+      ]);
+
+      // Private storage is per-member — anything returned here is already
+      // guaranteed to belong to the current user
+      const ownPrivateNotes = (
+        Array.isArray(privateNotes) ? privateNotes : []
+      ).map((n) => ({ ...n, _permission: "full" }));
+
+      // Shared storage is board-wide — filter to what this member was granted
+      const visibleSharedNotes = (
+        Array.isArray(sharedNotesRaw) ? sharedNotesRaw : []
+      )
+        .map((n) => ({ ...n, _permission: getMemberPermission(n, memberId) }))
+        .filter((n) => n._permission !== null);
+
+      if (ownPrivateNotes.length > 0) {
+        setNotes([...ownPrivateNotes, ...visibleSharedNotes]);
       } else {
         const legacyNote = await t
           .get("card", "private", "secureNote")
           .catch(() => null);
 
         if (legacyNote) {
-          const migrated = [{ id: generateNoteId(), text: legacyNote }];
-          setNotes(migrated);
+          const migrated = [
+            { id: generateNoteId(), text: legacyNote, _permission: "full" },
+          ];
+          setNotes([...migrated, ...visibleSharedNotes]);
           await t.set("card", "private", "secureNotes", migrated);
+        } else if (visibleSharedNotes.length > 0) {
+          setNotes(visibleSharedNotes);
         } else {
-          setNotes([{ id: generateNoteId(), text: "", isNew: false }]);
+          setNotes([
+            {
+              id: generateNoteId(),
+              text: "",
+              isNew: false,
+              _permission: "full",
+            },
+          ]);
         }
       }
     }
@@ -625,17 +748,42 @@ function CardNotesFrame() {
     return () => cancelAnimationFrame(raf);
   }, [notes]);
 
-  const persistNotes = async (updatedNotes) => {
-    setNotes(updatedNotes);
-    await t.set("card", "private", "secureNotes", updatedNotes);
+  const persistNote = async (noteId, updater) => {
+    const localNote = notes.find((n) => n.id === noteId);
+    const bucket =
+      getNoteAccess(localNote).scope === "private" ? "private" : "shared";
+
+    const currentList = await t
+      .get("card", bucket, "secureNotes")
+      .catch(() => []);
+    const list = Array.isArray(currentList) ? currentList : [];
+    const base = list.find((n) => n.id === noteId) || localNote;
+    const updatedNote = updater(base);
+
+    const exists = list.some((n) => n.id === noteId);
+    const updatedList = exists
+      ? list.map((n) => (n.id === noteId ? updatedNote : n))
+      : [...list, updatedNote];
+
+    await t.set("card", bucket, "secureNotes", updatedList);
+
+    setNotes((prev) =>
+      prev.some((n) => n.id === noteId)
+        ? prev.map((n) =>
+            n.id === noteId
+              ? { ...updatedNote, _permission: n._permission }
+              : n,
+          )
+        : [...prev, { ...updatedNote, _permission: "full" }],
+    );
   };
 
   const handleSaveNote = async (id, text) => {
-    const exists = notes.some((n) => n.id === id);
-    const updated = exists
-      ? notes.map((n) => (n.id === id ? { ...n, text, isNew: false } : n))
-      : [...notes, { id, text, isNew: false }];
-    await persistNotes(updated);
+    await persistNote(id, (existing) => ({
+      ...(existing || { id }),
+      text,
+      isNew: false,
+    }));
   };
 
   const handleAddNote = () => {
@@ -653,6 +801,7 @@ function CardNotesFrame() {
           note={note}
           onSave={handleSaveNote}
           onAdd={handleAddNote}
+          permission={note._permission || "full"}
         />
       ))}
     </div>
