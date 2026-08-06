@@ -287,7 +287,10 @@ function ManageAccessFrame() {
 
   useEffect(() => {
     async function loadExistingAccess() {
-      const memberId = await t.member("id").catch(() => null);
+      const memberId = await t
+        .member("id")
+        .then((m) => m.id)
+        .catch(() => null);
       setCurrentMemberId(memberId);
 
       const [privateNotes, sharedNotes] = await Promise.all([
@@ -689,7 +692,10 @@ function CardNotesFrame() {
 
   useEffect(() => {
     async function loadNotes() {
-      const memberId = await t.member("id").catch(() => null);
+      const memberId = await t
+        .member("id")
+        .then((m) => m.id)
+        .catch(() => null);
       setCurrentMemberId(memberId);
 
       const [privateNotes, sharedNotesRaw] = await Promise.all([
