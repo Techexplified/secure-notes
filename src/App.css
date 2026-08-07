@@ -465,22 +465,6 @@ body.is-modal #root {
   color: var(--sn-text-muted);
 }
 
-.btn-close {
-  background: transparent;
-  border: none;
-  color: var(--sn-text-muted);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.btn-close:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-}
-
 /* Reduced body padding */
 .modal-body {
   padding: 16px 20px;

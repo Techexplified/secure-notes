@@ -405,9 +405,6 @@ function ManageAccessFrame() {
             <p>Control access rights for this encrypted note</p>
           </div>
         </div>
-        {/* <button className="btn-close" onClick={handleClose}>
-          <X size={18} />
-        </button> */}
       </div>
 
       <div className="modal-body">
@@ -612,12 +609,12 @@ function SecureNoteItem({ note, onSave, onAdd, permission = "full" }) {
             <Users size={14} /> Manage Access
           </button>
 
-          <button
+          {/* <button
             className="btn-attach"
             onClick={() => console.log("Attach - not implemented yet")}
           >
             <Paperclip size={14} /> Attach
-          </button>
+          </button> */}
         </div>
       </div>
 
