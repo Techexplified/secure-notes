@@ -390,18 +390,6 @@ body.is-popup #root {
   display: flex;
 }
 
-.avatar-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--note-accent);
-  border: 2px solid var(--sn-surface);
-  margin-left: -6px;
-}
-.avatar-dot:first-child {
-  margin-left: 0;
-}
-
 .link-change {
   font-size: 13px;
   color: var(--sn-text-link);

@@ -591,6 +591,15 @@ function SecureNoteItem({ note, onSave, onAdd, permission = "full" }) {
     });
   };
 
+  const access = getNoteAccess(note);
+  const memberCount = Object.keys(access.permissions || {}).length;
+  const shareHint =
+    access.scope === "board"
+      ? "Shared with the entire board"
+      : access.scope === "custom" && memberCount > 0
+        ? `Shared with ${memberCount} member${memberCount !== 1 ? "s" : ""}`
+        : "Only you can see this private note";
+
   return (
     <div className="card-notes__note-card">
       <div className="card-notes__topbar">
@@ -631,10 +640,8 @@ function SecureNoteItem({ note, onSave, onAdd, permission = "full" }) {
               </button>
             )}
             <div className="card-notes__share-info">
-              <span className="hint">Only you can see this private note</span>
-              <div className="avatar-group">
-                <span className="avatar-dot" />
-              </div>
+              <span className="hint">{shareHint}</span>
+              <div className="avatar-group"></div>
               <a
                 className="link-change"
                 onClick={(e) => {
@@ -676,7 +683,7 @@ function SecureNoteItem({ note, onSave, onAdd, permission = "full" }) {
           </div>
 
           <div className="card-notes__footer">
-            <span className="hint">Only you can see this private note</span>
+            <span className="hint">{shareHint}</span>
             {saved && <span className="saved">Saved!</span>}
           </div>
         </>
