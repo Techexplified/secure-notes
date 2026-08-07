@@ -405,9 +405,9 @@ function ManageAccessFrame() {
             <p>Control access rights for this encrypted note</p>
           </div>
         </div>
-        <button className="btn-close" onClick={handleClose}>
+        {/* <button className="btn-close" onClick={handleClose}>
           <X size={18} />
-        </button>
+        </button> */}
       </div>
 
       <div className="modal-body">
